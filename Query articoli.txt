@@ -190,3 +190,26 @@ from articoli a
 		on c.id_categoria = ac.id_categoria
 where a.id_articolo is null;
 
+-- 3) Trova le categorie che contengono articoli scritti da utenti iscritti prima del 2024. (uso di select distinct per risolvere i duplicati)
+
+select distinct c.*
+from categorie c 
+	join articoli_categorie ac 
+		on c.id_categoria = ac.id_categoria 
+	join articoli a 
+		on a.id_articolo = ac.id_articolo 
+	join utenti u 
+		on a.id_utente = u.id_utente 
+where u.data_iscrizione < '2024-01-01'
+
+-- 4) Recupera le categorie che sono associate ad almeno 5 articoli pubblicati nel 2024.
+
+select c.*, count(a.id_articolo) 
+from categorie c 
+	join articoli_categorie ac 
+		on c.id_categoria = ac.id_categoria 
+	join articoli a 
+		on a.id_articolo = ac.id_articolo
+where year (a.data_pubblicazione) = 2024
+group by c.id_categoria 
+having count(a.id_articolo) > 4
