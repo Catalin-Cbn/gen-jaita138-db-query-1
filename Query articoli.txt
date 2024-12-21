@@ -1,0 +1,192 @@
+-- LEVEL 1
+
+-- 1) Recupera tutti gli utenti registrati nel sistema.
+
+select *
+from utenti u;
+
+-- 2) Recupera il nome, cognome e email di tutti gli utenti iscritti dopo il 1° marzo 2024.
+
+select *
+from utenti u 
+where data_iscrizione >= '2024-03-01';
+
+-- 3) Recupera tutti gli articoli insieme al nome e cognome dell'autore.
+
+select * 
+from articoli a 
+	join utenti u 
+		on a.id_utente = u.id_utente;
+		
+-- 4) Recupera i titoli degli articoli pubblicati nel mese di maggio 2024.
+
+select a.titolo, a.data_pubblicazione
+from articoli a 
+where month(data_pubblicazione)= 3 AND year(data_pubblicazione)= 2024;
+
+-- 5) Recupera le prime 5 categorie ordinate alfabeticamente per nome.
+
+select *
+from categorie c 
+order by c.nome_categoria 
+limit 5;
+
+-- 6) Recupera gli articoli che appartengono alla categoria 'Tecnologia'.
+
+select *
+from articoli a
+	join articoli_categorie ac 
+		on a.id_articolo = ac.id_articolo 
+	join categorie c 
+		on c.id_categoria = ac.id_categoria
+where c.nome_categoria = 'tecnologia';
+
+-- 7) Recupera le email degli utenti che hanno scritto almeno un articolo.
+
+select u.email
+from articoli a 
+	join utenti u 
+		on a.id_utente = u.id_utente;
+
+-- 8) Recupera tutti gli articoli pubblicati tra il 1° giugno 2024 e il 31 agosto 2024.
+
+select *
+from articoli a 
+where data_pubblicazione >= '2024-06-01' and data_pubblicazione <= '2024-08-31';
+
+-- 9) Recupera i dettagli delle categorie associate all'articolo con id_articolo = 10.
+
+select c.id_categoria, c.nome_categoria, c.descrizione 
+from articoli a 
+	join articoli_categorie ac 
+		on a.id_articolo = ac.id_articolo 
+	join categorie c 
+		on c.id_categoria = ac.id_categoria 
+where a.id_articolo = 10;
+
+-- 10) Recupera i nomi degli utenti ordinati per data di iscrizione più recente.
+
+select u.nome, u.cognome, u.data_iscrizione 
+from utenti u 
+order by u.data_iscrizione desc;
+
+-- ---------------------------------------------------------------------------------------------------------------------------------------------
+
+-- LEVEL 2
+
+-- 1) Conta il numero di articoli scritti da ogni utente.
+
+select u.nome, u.cognome, count(a.id_articolo) as 'Numero Articoli'
+from articoli a 
+	join utenti u 
+		on a.id_utente = u.id_utente
+group by u.id_utente;
+
+-- 2) Trova la categoria con il maggior numero di articoli associati.
+
+select c.nome_categoria, count(a.id_articolo)
+from articoli a 
+	join articoli_categorie ac 
+		on a.id_articolo = ac.id_articolo 
+	join categorie c 
+		on c.id_categoria = ac.id_categoria 
+		group by c.nome_categoria;
+		
+-- 3) Recupera gli utenti che hanno scritto più di 2 articoli.
+
+select u.nome, u.cognome, count(a.id_articolo)
+from articoli a 
+	join utenti u 
+		on a.id_utente = u.id_utente 
+group by u.id_utente 
+having count(a.id_articolo) > 2;
+
+-- 4) Calcola la data di pubblicazione più recente per ogni categoria.
+
+select c.nome_categoria, max(a.data_pubblicazione) 
+from articoli a 
+	join articoli_categorie ac 
+		on a.id_articolo = ac.id_articolo 
+	join categorie c
+		on c.id_categoria = ac.id_categoria
+group by c.nome_categoria
+order by c.nome_categoria;
+
+-- 5) Trova il numero medio di articoli per utente. (non sono riuscito a formare una query senza utilizzare una subquery e con gli strumenti utilizzati a lezione, 
+-- mi sono fatto spiegare i subquery da chatGPT, in futuro approfondirò a lezione)
+
+SELECT AVG(articoliPerUtente) AS "Media Articoli per Utente"
+FROM (
+    SELECT COUNT(a.id_articolo) AS articoliPerUtente
+    FROM articoli a
+    GROUP BY a.id_utente
+) articoliPerUtente;
+
+-- 6) Recupera le categorie che hanno almeno 3 articoli associati.
+
+select c.nome_categoria, count(a.id_articolo) 
+from articoli a 
+	join articoli_categorie ac
+		on a.id_articolo = ac.id_articolo 
+	join categorie c 
+		on ac.id_categoria = c.id_categoria
+group by c.nome_categoria 
+having count(a.id_articolo) > 2;
+
+-- 7) Calcola il totale degli articoli pubblicati per ogni mese del 2024.
+
+select  month(a.data_pubblicazione), count(a.id_articolo) 
+from articoli a 
+where year(data_pubblicazione) = 2024
+group by month(a.data_pubblicazione);
+
+-- 8) Trova l'utente che ha la data di iscrizione più antica.
+
+select u.nome, u.cognome, u.data_iscrizione 
+from utenti u
+order by u.data_iscrizione
+limit 1;
+
+-- 9) Recupera le categorie e il numero di articoli associati a ciascuna, ordinati dal più al meno.
+
+select c.nome_categoria, count(a.id_articolo) 
+from articoli a 
+	join articoli_categorie ac
+		on a.id_articolo = ac.id_articolo 
+	join categorie c 
+		on ac.id_categoria = c.id_categoria
+group by c.nome_categoria 
+order by count(a.id_articolo) desc;
+
+-- 10) Calcola il numero totale di articoli pubblicati da utenti iscritti nel 2024.
+
+select u.nome, u.cognome, count(a.id_articolo)
+from articoli a 
+	join utenti u 
+		on a.id_utente = u.id_utente 
+where year(u.data_iscrizione) = 2024
+group by u.nome, u.cognome;
+
+-- ---------------------------------------------------------------------------------------------------------------------------------------------
+
+-- BONUS LEVEL
+
+-- 1) Recupera gli utenti che non hanno scritto nessun articolo.
+
+select u.nome, u.cognome, count(a.id_articolo) 
+from articoli a 
+	right join utenti u 
+ 		on a.id_utente = u.id_utente
+group by u.nome, u.cognome
+having count(a.id_articolo) = 0 
+
+-- 2) Trova le categorie che non hanno alcun articolo associato.
+
+select c.id_categoria, c.nome_categoria, c.descrizione 
+from articoli a 
+	right join articoli_categorie ac 
+		on a.id_articolo = ac.id_articolo 
+	right join categorie c
+		on c.id_categoria = ac.id_categoria
+where a.id_articolo is null;
+
